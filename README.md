@@ -27,7 +27,7 @@ Financial data requires atomicity. The deposit logic uses SQL `BEGIN`, `COMMIT`,
 
 ## 🛠 API Endpoints
 
-### Base URL: `https://[your-id].execute-api.us-east-1.amazonaws.com`
+### Base URL: `https://5jhzwxkp9e.execute-api.us-east-1.amazonaws.com`
 
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
