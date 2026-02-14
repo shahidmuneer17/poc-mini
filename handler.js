@@ -8,10 +8,20 @@ const dbConfig = {
   ssl: { rejectUnauthorized: false },
 };
 
+const checkAuth = (event) => {
+  const apiKey = event.headers["x-api-key"] || event.headers["X-Api-Key"];
+
+  if (apiKey !== process.env.API_SECRET) {
+    throw new Error("Unauthorized: Invalid API Key");
+  }
+};
+
 module.exports.deposit = async (event) => {
   const client = new Client(dbConfig);
 
   try {
+    checkAuth(event);
+
     await client.connect();
 
     // Parse the simulated webhook
@@ -71,6 +81,8 @@ module.exports.getHistory = async (event) => {
   const client = new Client(dbConfig);
 
   try {
+    checkAuth(event);
+
     await client.connect();
 
     // 1. Get the User ID from the URL
@@ -112,6 +124,8 @@ module.exports.getBalance = async (event) => {
   const client = new Client(dbConfig);
 
   try {
+    checkAuth(event);
+
     await client.connect();
 
     const userId = event.pathParameters.id;
