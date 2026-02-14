@@ -11,7 +11,7 @@ const dbConfig = {
 const checkAuth = (event) => {
   const apiKey = event.headers["x-api-key"] || event.headers["X-Api-Key"];
 
-  if (apiKey !== process.env.API_SECRET) {
+  if (apiKey !== process.env.API_KEY) {
     throw new Error("Unauthorized: Invalid API Key");
   }
 };

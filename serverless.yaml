@@ -10,7 +10,7 @@ provider:
     DB_USER: ${env:DB_USER}
     DB_PASS: ${env:DB_PASS}
     DB_NAME: ${env:DB_NAME}
-    API_SECRET: ${env:API_KEY}
+    API_KEY: ${env:API_KEY}
 
 functions:
   depositCrypto:
