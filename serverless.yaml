@@ -1,0 +1,20 @@
+service: mini-exchange
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: us-east-1
+  environment:
+    DB_HOST: ${env:DB_HOST}
+    DB_USER: ${env:DB_USER}
+    DB_PASS: ${env:DB_PASS}
+    DB_NAME: ${env:DB_NAME}
+
+functions:
+  depositCrypto:
+    handler: handler.deposit
+    events:
+      - httpApi:
+          path: /deposit
+          method: post
