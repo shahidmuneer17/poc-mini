@@ -17,11 +17,14 @@ const checkAuth = (event) => {
 };
 
 module.exports.deposit = async (event) => {
+  try {
+    checkAuth(event);
+  } catch (err) {
+    return { statusCode: 401, body: JSON.stringify({ error: "Unauthorized" }) };
+  }
   const client = new Client(dbConfig);
 
   try {
-    checkAuth(event);
-
     await client.connect();
 
     // Parse the simulated webhook
@@ -78,11 +81,14 @@ module.exports.deposit = async (event) => {
 };
 
 module.exports.getHistory = async (event) => {
+  try {
+    checkAuth(event);
+  } catch (err) {
+    return { statusCode: 401, body: JSON.stringify({ error: "Unauthorized" }) };
+  }
   const client = new Client(dbConfig);
 
   try {
-    checkAuth(event);
-
     await client.connect();
 
     // 1. Get the User ID from the URL
@@ -121,11 +127,14 @@ module.exports.getHistory = async (event) => {
 };
 
 module.exports.getBalance = async (event) => {
+  try {
+    checkAuth(event);
+  } catch (err) {
+    return { statusCode: 401, body: JSON.stringify({ error: "Unauthorized" }) };
+  }
   const client = new Client(dbConfig);
 
   try {
-    checkAuth(event);
-
     await client.connect();
 
     const userId = event.pathParameters.id;
