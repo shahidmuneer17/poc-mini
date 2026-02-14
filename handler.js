@@ -66,3 +66,91 @@ module.exports.deposit = async (event) => {
     await client.end();
   }
 };
+
+module.exports.getHistory = async (event) => {
+  const client = new Client(dbConfig);
+
+  try {
+    await client.connect();
+
+    // 1. Get the User ID from the URL
+    const userId = event.pathParameters.id;
+
+    if (!userId) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: "Missing User ID" }),
+      };
+    }
+
+    console.log(`Fetching history for User ID: ${userId}`);
+
+    // 2. Query the Database
+    const res = await client.query(
+      "SELECT * FROM transactions WHERE user_id = $1 ORDER BY tx_hash DESC",
+      [userId],
+    );
+
+    // 3. Return the Rows
+    return {
+      statusCode: 200,
+      body: JSON.stringify({
+        user_id: userId,
+        count: res.rowCount,
+        transactions: res.rows,
+      }),
+    };
+  } catch (err) {
+    console.error(err);
+    return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
+  } finally {
+    await client.end();
+  }
+};
+
+module.exports.getBalance = async (event) => {
+  const client = new Client(dbConfig);
+
+  try {
+    await client.connect();
+
+    const userId = event.pathParameters.id;
+
+    if (!userId) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: "Missing User ID" }),
+      };
+    }
+
+    // 1. Query the User Table
+    const res = await client.query(
+      "SELECT id, name, fiat_balance FROM users WHERE id = $1",
+      [userId],
+    );
+
+    // 2. Handle "User Not Found"
+    if (res.rows.length === 0) {
+      return {
+        statusCode: 404,
+        body: JSON.stringify({ error: "User not found" }),
+      };
+    }
+
+    // 3. Return the Balance
+    return {
+      statusCode: 200,
+      body: JSON.stringify({
+        user_id: res.rows[0].id,
+        name: res.rows[0].name,
+        balance: res.rows[0].fiat_balance,
+        currency: "USD", // Hardcoded for this demo
+      }),
+    };
+  } catch (err) {
+    console.error(err);
+    return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
+  } finally {
+    await client.end();
+  }
+};

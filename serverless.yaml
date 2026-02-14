@@ -18,3 +18,15 @@ functions:
       - httpApi:
           path: /deposit
           method: post
+  getTransactions:
+    handler: handler.getHistory
+    events:
+      - httpApi:
+          path: /transactions/{id}
+          method: get
+  getBalance:
+    handler: handler.getBalance
+    events:
+      - httpApi:
+          path: /balance/{id}
+          method: get
