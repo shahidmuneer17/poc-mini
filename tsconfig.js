@@ -1,13 +1,16 @@
 {
   "compilerOptions": {
+    "target": "ES2022",
     "module": "CommonJS",
-    "target": "ES2020",
-    "lib": ["ES2020"],
+    "lib": ["ES2022"],
     "strict": true,
-    "preserveConstEnums": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
     "outDir": ".build",
     "sourceMap": true
   },
-  "include": ["handler.ts"],
-  "exclude": ["node_modules"]
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules", ".serverless", ".build"]
 }

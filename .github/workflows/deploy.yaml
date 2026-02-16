@@ -22,7 +22,8 @@ jobs:
           npm install
 
       - name: Type Check
-        run: npx tsc --noEmit
+        # FIX: Explicitly tell tsc where the config is (-p tsconfig.json)
+        run: npx tsc -p tsconfig.json --noEmit
 
       - name: Deploy
         run: serverless deploy --stage dev
