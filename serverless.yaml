@@ -6,11 +6,27 @@ provider:
   runtime: nodejs22.x
   region: us-east-1
   environment:
-    DB_HOST: ${env:DB_HOST}
-    DB_USER: ${env:DB_USER}
-    DB_PASS: ${env:DB_PASS}
-    DB_NAME: ${env:DB_NAME}
     API_KEY: ${env:API_KEY}
+    USERS_TABLE: ${self:service}-users-dev
+    TX_TABLE: ${self:service}-transactions-dev
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource:
+            - "arn:aws:dynamodb:${aws:region}:*:table/${self:provider.environment.USERS_TABLE}"
+            - "arn:aws:dynamodb:${aws:region}:*:table/${self:provider.environment.TX_TABLE}"
+            - "arn:aws:dynamodb:${aws:region}:*:table/${self:provider.environment.TX_TABLE}/index/UserIdIndex"
+
+plugins:
+  - serverless-plugin-typescript
 
 functions:
   depositCrypto:
@@ -31,3 +47,40 @@ functions:
       - httpApi:
           path: /balance/{id}
           method: get
+
+resources:
+  Resources:
+    # 1. Users Table
+    UsersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.USERS_TABLE}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+
+    # 2. Transactions Table
+    TransactionsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.TX_TABLE}
+        AttributeDefinitions:
+          - AttributeName: tx_hash
+            AttributeType: S
+          - AttributeName: user_id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: tx_hash
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+        GlobalSecondaryIndexes:
+          - IndexName: UserIdIndex
+            KeySchema:
+              - AttributeName: user_id
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL

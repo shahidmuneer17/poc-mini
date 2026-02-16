@@ -2,7 +2,7 @@
   "name": "mini-exchange",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "handler.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -10,9 +10,17 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.990.0",
+    "@aws-sdk/lib-dynamodb": "^3.990.0",
     "pg": "^8.18.0"
   },
   "devDependencies": {
-    "serverless": "^3.38.0"
+    "@types/aws-lambda": "^8.10.160",
+    "@types/node": "^22.19.11",
+    "@types/pg": "^8.16.0",
+    "serverless": "^3.38.0",
+    "serverless-plugin-typescript": "^2.1.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
   }
 }
