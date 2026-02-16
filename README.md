@@ -1,7 +1,7 @@
 # 🚀 Serverless Crypto-to-Fiat Exchange (V2)
 
 **Status:** Production Ready 🟢 | **Stack:** TypeScript & DynamoDB
-**Live Demo:** [Insert Your NEW API URL Here]
+**Live Demo:** [https://5jhzwxkp9e.execute-api.us-east-1.amazonaws.com]
 
 A cloud-native financial transaction engine re-architected for **infinite scale**.
 This project demonstrates a high-performance **Serverless Microservice** capable of processing high-volume crypto webhooks with strict **ACID compliance** and **Idempotency**.
