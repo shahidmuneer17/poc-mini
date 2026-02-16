@@ -45,7 +45,9 @@ export const deposit: APIGatewayProxyHandler = async (event) => {
 
     // 1. Parse & Validate Payload
     const body = JSON.parse(event.body);
-    const { tx_hash, user_id, currency } = body;
+    const { tx_hash, currency } = body;
+
+    const user_id = String(body.user_id);
 
     const amount = parseFloat(body.amount);
 
