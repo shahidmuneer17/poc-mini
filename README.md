@@ -5,7 +5,7 @@ A cloud-native financial transaction engine built for high-volume crypto webhook
 ## 🚀 Architecture
 This project uses an **Event-Driven Serverless Architecture** to handle crypto deposits and balance updates without managing servers.
 
-* **Compute:** AWS Lambda (Node.js 18.x)
+* **Compute:** AWS Lambda (Node.js 22.x)
 * **API Gateway:** HTTP API (v2) for low-latency routing.
 * **Database:** PostgreSQL (AWS RDS) for relational data integrity.
 * **Infrastructure as Code:** Serverless Framework (v3).
