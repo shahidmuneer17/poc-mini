@@ -42,27 +42,47 @@ export const deposit: APIGatewayProxyHandler = async (event) => {
     checkAuth(event);
 
     if (!event.body) throw new Error("Missing Body");
-    const { tx_hash, user_id, amount, currency }: TransactionPayload =
-      JSON.parse(event.body);
 
-    console.log(`Processing ${currency} Deposit: ${tx_hash}`);
+    // 1. Parse & Validate Payload
+    const body = JSON.parse(event.body);
+    const { tx_hash, user_id, currency } = body;
+
+    const amount = parseFloat(body.amount);
+
+    // 2. Fail fast if validation fails
+    if (!tx_hash || !user_id || !currency) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: "Missing required fields" }),
+      };
+    }
+    if (isNaN(amount) || amount <= 0) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: "Invalid Amount" }),
+      };
+    }
+
+    console.log(
+      `Processing ${currency} Deposit: ${tx_hash} | Amount: ${amount}`,
+    );
 
     // ATOMIC TRANSACTION
     const params = new TransactWriteCommand({
       TransactItems: [
         {
-          // 1. Insert Transaction Record (Only if it doesn't exist)
+          // 1. Insert Transaction Record
           Put: {
             TableName: TX_TABLE,
             Item: {
               tx_hash, // Partition Key
-              user_id, // GSI Key (for history lookups)
-              amount,
+              user_id, // GSI Key
+              amount, // Stored as Number
               currency,
               status: "COMPLETED",
               created_at: new Date().toISOString(),
             },
-            // IDEMPOTENCY CHECK: Fails the whole batch if tx_hash already exists
+            // Idempotency: Fail if tx_hash exists
             ConditionExpression: "attribute_not_exists(tx_hash)",
           },
         },
@@ -71,9 +91,12 @@ export const deposit: APIGatewayProxyHandler = async (event) => {
           Update: {
             TableName: USERS_TABLE,
             Key: { id: user_id },
-            UpdateExpression: "SET fiat_balance = fiat_balance + :amount",
+            // FIX: Use 'if_not_exists' to handle cases where balance might be missing
+            UpdateExpression:
+              "SET fiat_balance = if_not_exists(fiat_balance, :zero) + :amount",
             ExpressionAttributeValues: {
               ":amount": amount,
+              ":zero": 0,
             },
           },
         },
@@ -83,19 +106,26 @@ export const deposit: APIGatewayProxyHandler = async (event) => {
     try {
       await docClient.send(params);
     } catch (err: any) {
-      // Handle Idempotency Failure specifically
-      if (
-        err.name === "TransactionCanceledException" &&
-        err.CancellationReasons[0].Code === "ConditionalCheckFailed"
-      ) {
-        return {
-          statusCode: 200,
-          body: JSON.stringify({
-            message: "Transaction already processed. Skipping.",
-          }),
-        };
+      console.error(
+        "DynamoDB Transaction Error:",
+        JSON.stringify(err, null, 2),
+      );
+
+      // Handle Idempotency Failure (TransactionCanceledException)
+      if (err.name === "TransactionCanceledException") {
+        // Check which operation failed (Index 0 is the Put, Index 1 is the Update)
+        const reasons = err.CancellationReasons;
+
+        if (reasons && reasons[0].Code === "ConditionalCheckFailed") {
+          return {
+            statusCode: 200,
+            body: JSON.stringify({
+              message: "Transaction already processed. Skipping.",
+            }),
+          };
+        }
       }
-      throw err; // Re-throw other errors
+      throw err; // Re-throw real errors (like DB down)
     }
 
     return {
@@ -111,7 +141,6 @@ export const deposit: APIGatewayProxyHandler = async (event) => {
     return { statusCode, body: JSON.stringify({ error: err.message }) };
   }
 };
-
 export const getHistory: APIGatewayProxyHandler = async (event) => {
   try {
     checkAuth(event);
